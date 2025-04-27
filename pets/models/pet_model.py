@@ -207,3 +207,31 @@ class Pet(db.Model):
                 f"(name '{name}): {e}"
             )
             raise
+
+    @classmethod
+    def delete(cls, pet_id: int) -> None:
+        """Delete a pet by ID.
+
+        Args:
+            pet_id: The ID of the boxer to delete.
+
+        Raises:
+            ValueError: If the pet with the given ID does not exist.
+
+        """
+        logger.info(f"Received request to delete pet with ID {pet_id}")
+
+        try:
+            pet = cls.query.get(pet_id)
+            if not pet:
+                logger.warning(f"Attempted to delete non-existent pet with ID {pet_id}")
+                raise ValueError(f"Pet with ID {pet_id} not found")
+
+            db.session.delete(pet)
+            db.session.commit()
+            logger.info(f"Successfully deleted pet with ID {pet_id}")
+
+        except SQLAlchemyError as e:
+            logger.error(f"Database error while deleting pet with ID {pet_id}: {e}")
+            db.session.rollback()
+            raise
