@@ -9,6 +9,7 @@ from pets.db import db
 @pytest.fixture
 def sample_pet(session):
     """Fixture to create a sample pet for testing."""
+    session.query(Pet).delete()  # <-- wipe pets table before each test
     pet = Pet(
         name="Fluffy",
         age=2,
@@ -21,6 +22,7 @@ def sample_pet(session):
     session.add(pet)
     session.commit()
     return pet
+
 
 
 def test_pet_creation(session):

@@ -15,28 +15,17 @@ load_dotenv()
 
 def create_app(config_class=ProductionConfig):
     app = Flask(__name__)
+    app.config.from_object(config_class)
 
-    ####################################################
-    #
-    # Healthchecks
-    #
-    ####################################################
+    # Initialize SQLAlchemy here
+    db.init_app(app)
+
 
     @app.route('/api/health', methods=['GET'])
-    def healthcheck() -> Response:
-        """
-        Health check route to verify the service is running.
-
-        Returns:
-            JSON response indicating the health status of the service.
-
-        """
+    def healthcheck():
         app.logger.info("Health check endpoint hit")
-        return make_response(jsonify({
-            'status': 'success',
-            'message': 'Service is running'
-        }), 200)
-    
+        return jsonify({'status': 'success', 'message': 'Service is running'})
+
     return app
     
 if __name__ == '__main__':
