@@ -10,8 +10,13 @@ logger = logging.getLogger(__name__)
 configure_logger(logger)
 
 class Pet(db.Model):
-    """docstring
+    """
+    Represents a pet available in the pet shop system.
 
+    This model maps to the 'pets' table in the database and stores attributes
+    like name, breed, age, weight, size classification, kid-friendliness, and price.
+    Used in a Flask-SQLAlchemy application to manage pet data and perform operations
+    like adding, retrieving, updating, and deleting pets.
     """
 
     __tablename__ = 'pets'
@@ -26,6 +31,17 @@ class Pet(db.Model):
     size = db.Column(db.String)
 
     def validate(self) -> None:
+        """Validate the pet's attributes.
+
+        Ensures all fields meet business rules:
+        - Name and breed must be non-empty strings.
+        - Age, weight, and price must be positive numbers.
+        - Kid-friendliness must be a boolean.
+        - Size must be a non-empty string.
+
+        Raises:
+            ValueError: If any attribute does not meet its validation rule.
+        """
         if not self.name or not isinstance(self.name, str):
             raise ValueError("Name must be a non-empty string.")
         
@@ -48,19 +64,20 @@ class Pet(db.Model):
             raise ValueError("Size must be a non-empty string.")
 
     def __init__(self, name: str, age: int, breed: str, weight: float, kid_friendly: bool, price: float, size: str):
-        """Initialize a new Boxer instance with basic attributes.
+        """Initialize a new Pet instance with the given attributes.
 
         Args:
-            name (str): The boxer's name. Must be unique.
-            weight (float): The boxer's weight in pounds. Must be at least 125.
-            height (float): The boxer's height in inches. Must be greater than 0.
-            reach (float): The boxer's reach in inches. Must be greater than 0.
-            age (int): The boxer's age. Must be between 18 and 40, inclusive.
+            name (str): The pet's name. Must be unique.
+            age (int): The pet's age in years. Must be positive.
+            breed (str): The breed of the pet. Must be unique.
+            weight (float): The pet's weight in pounds. Must be positive.
+            kid_friendly (bool): Whether the pet is kid-friendly.
+            price (float): The price of the pet. Must be positive.
+            size (str, optional): The size classification (SMALL, MEDIUM, etc.). 
+                If not provided, it is determined automatically based on weight.
 
         Notes:
-            - The boxer's weight class is automatically assigned based on weight.
-            - Fight statistics (`fights` and `wins`) are initialized to 0 by default in the database schema.
-
+            - The pet's size classification is automatically determined if not provided.
         """
         self.name = name
         self.age = age
@@ -72,23 +89,16 @@ class Pet(db.Model):
 
     @classmethod
     def get_size(cls, weight: float) -> str:
-        """Determine the size based on weight.
-
-        This method is defined as a class method rather than a static method,
-        even though it does not currently require access to the class object.
-        Both @staticmethod and @classmethod would be valid choices in this context;
-        however, using @classmethod makes it easier to support subclass-specific
-        behavior or logic overrides in the future.
+        """Determine the size classification based on weight.
 
         Args:
-            weight: The weight of the pet.
+            weight (float): The pet's weight.
 
         Returns:
-            str: The weight class of the pet.
+            str: One of 'SMALL', 'MEDIUM', 'LARGE', 'XLARGE'.
 
         Raises:
-            ValueError: If the weight is less than 0.
-
+            ValueError: If the weight is negative.
         """
         if weight >= 90:
             size = 'XLARGE'
@@ -104,18 +114,18 @@ class Pet(db.Model):
 
     @classmethod
     def create_pet(cls, name: str, breed: str, age: int, weight: float, kid_friendly: bool) -> None:
-        """Create and persist a new Boxer instance.
+        """Create and persist a new Pet instance.
 
         Args:
-            name: The name of the boxer.
-            weight: The weight of the boxer.
-            height: The height of the boxer.
-            reach: The reach of the boxer.
-            age: The age of the boxer.
+            name (str): The pet's name.
+            breed (str): The pet's breed.
+            age (int): The pet's age.
+            weight (float): The pet's weight.
+            kid_friendly (bool): Whether the pet is kid-friendly.
+            price (float): The price of the pet.
 
         Raises:
-            IntegrityError: If a boxer with the same name already exists.
-            ValueError: If the weight is less than 125 or if any of the input parameters are invalid.
+            ValueError: If validation fails or a pet with the same name exists.
             SQLAlchemyError: If there is a database error during creation.
 
         """
@@ -159,17 +169,16 @@ class Pet(db.Model):
 
     @classmethod
     def get_pet_by_id(cls, pet_id: int) -> "Pet":
-        """Retrieve a pet by ID.
+        """Retrieve a pet by its ID.
 
         Args:
-            pet_id: The ID of the pet.
+            pet_id (int): The pet's ID.
 
         Returns:
             Pet: The pet instance.
 
         Raises:
-            ValueError: If the pet with the given ID does not exist.
-
+            ValueError: If no pet is found with the given ID.
         """
         logger.info(f"Attempting to retrieve pet with ID {pet_id}")
 
@@ -189,17 +198,16 @@ class Pet(db.Model):
 
     @classmethod
     def get_pet_by_name(cls, name: str) -> "Pet":
-        """Retrieve a pet by name.
+        """Retrieve a pet by its name.
 
         Args:
-            name: The name of the pet.
+            name (str): The pet's name.
 
         Returns:
             Pet: The pet instance.
 
         Raises:
-            ValueError: If the pet with the given name does not exist.
-
+            ValueError: If no pet is found with the given name.
         """
         logger.info(f"Attempting to retrieve pet with name '{name}'")
 
@@ -222,14 +230,14 @@ class Pet(db.Model):
 
     @classmethod
     def delete(cls, pet_id: int) -> None:
-        """Delete a pet by ID.
+        """Delete a pet by its ID.
 
         Args:
-            pet_id: The ID of the boxer to delete.
+            pet_id (int): The pet's ID.
 
         Raises:
-            ValueError: If the pet with the given ID does not exist.
-
+            ValueError: If no pet is found with the given ID.
+            SQLAlchemyError: If any database error occurs during deletion.
         """
         logger.info(f"Received request to delete pet with ID {pet_id}")
 
