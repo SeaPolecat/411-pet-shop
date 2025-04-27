@@ -26,7 +26,7 @@ class Pet(db.Model):
     age = db.Column(db.Integer, nullable=False)
     breed = db.Column(db.String, unique=True, nullable=False)
     weight = db.Column(db.Float, nullable=False)
-    kid_friendly = db.Column(db.Bool, nullable=False)
+    kid_friendly = db.Column(db.Boolean, nullable=False)
     price = db.Column(db.Float, nullable=False)
     size = db.Column(db.String)
 
