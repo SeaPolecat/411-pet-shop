@@ -6,7 +6,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from config import ProductionConfig
 
 from pets.db import db
-from pets.models.pet_model import Pets
+from pets.models.pet_model import Pet
 from pets.models.user_model import Users
 from pets.utils.logger import configure_logger
 
