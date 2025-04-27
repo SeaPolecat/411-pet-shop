@@ -210,3 +210,30 @@ class Pet(db.Model):
             logger.error(f"Database error while deleting pet with ID {pet_id}: {e}")
             db.session.rollback()
             raise
+
+    
+    def update_price(self, new_price: float) -> None:
+        """Update the pet's price.
+
+        Args:
+            new_price: The pet's new price.
+
+        Raises:
+            ValueError: If the new price is invalid.
+            SQLAlchemyError: If any database error occurs.
+        """
+        logger.info(f"Attempting to update price for pet with name {self.name}")
+
+        try:
+            if new_price <= 0:
+                raise ValueError("Price must be a positive number. Pets can't be free!")
+
+            self.price = new_price
+
+            db.session.commit()
+            logger.info(f"Updated price for pet {self.name}: ${self.price}.")
+
+        except SQLAlchemyError as e:
+            logger.error(f"Database error while updating price for pet {self.name}: {e}")
+            db.session.rollback()
+            raise
