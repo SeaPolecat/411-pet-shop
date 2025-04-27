@@ -68,27 +68,27 @@ class Pet(db.Model):
         """Retrieve a pet by ID.
 
         Args:
-            boxer_id: The ID of the boxer.
+            pet_id: The ID of the pet.
 
         Returns:
-            Boxer: The boxer instance.
+            Pet: The pet instance.
 
         Raises:
-            ValueError: If the boxer with the given ID does not exist.
+            ValueError: If the pet with the given ID does not exist.
 
         """
-        logger.info(f"Attempting to retrieve boxer with ID {boxer_id}")
+        logger.info(f"Attempting to retrieve pet with ID {pet_id}")
 
         try:
-            boxer = db.session.get(cls, boxer_id)
+            pet = db.session.get(cls, pet_id)
 
-            if not boxer:
-                logger.info(f"Boxer with ID {boxer_id} not found")
-                raise ValueError(f"Boxer with ID {boxer_id} not found")
+            if not pet:
+                logger.info(f"Pet with ID {pet_id} not found")
+                raise ValueError(f"Pet with ID {pet_id} not found")
 
-            logger.info(f"Successfully retrieved boxer: {boxer.name})")
-            return boxer
+            logger.info(f"Successfully retrieved pet: {pet.name})")
+            return pet
 
         except SQLAlchemyError as e:
-            logger.error(f"Database error while retrieving boxer by ID {boxer_id}: {e}")
+            logger.error(f"Database error while retrieving pet by ID {pet_id}: {e}")
             raise
