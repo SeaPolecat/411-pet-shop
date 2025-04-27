@@ -137,7 +137,6 @@ class Pet(db.Model):
                 weight=weight,
                 age=age,
                 breed=breed.strip(),
-                age=age
             )
             pet.validate()
         except ValueError as e:
