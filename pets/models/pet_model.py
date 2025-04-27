@@ -61,36 +61,6 @@ class Pet(db.Model):
         self.kid_friendly = kid_friendly
 
     @classmethod
-    def get_pet_by_id(cls, pet_id: int) -> "Pet":
-        """Retrieve a pet by ID.
-
-        Args:
-            boxer_id: The ID of the boxer.
-
-        Returns:
-            Boxer: The boxer instance.
-
-        Raises:
-            ValueError: If the boxer with the given ID does not exist.
-
-        """
-        logger.info(f"Attempting to retrieve boxer with ID {boxer_id}")
-
-        try:
-            boxer = db.session.get(cls, boxer_id)
-
-            if not boxer:
-                logger.info(f"Boxer with ID {boxer_id} not found")
-                raise ValueError(f"Boxer with ID {boxer_id} not found")
-
-            logger.info(f"Successfully retrieved boxer: {boxer.name})")
-            return boxer
-
-        except SQLAlchemyError as e:
-            logger.error(f"Database error while retrieving boxer by ID {boxer_id}: {e}")
-            raise
-
-    @classmethod
     def create_pet(cls, name: str, breed: str, age: int, weight: float, kid_friendly: bool) -> None:
         """Create and persist a new Boxer instance.
 
