@@ -23,6 +23,7 @@ class Pet(db.Model):
     weight = db.Column(db.Float, nullable=False)
     kid_friendly = db.Column(db.Bool, nullable=False)
     price = db.Column(db.Float, nullable=False)
+    size = db.Column(db.String)
 
     def validate(self) -> None:
         if not self.name or not isinstance(self.name, str):
@@ -42,8 +43,11 @@ class Pet(db.Model):
         
         if not self.price or self.price <= 0 or not isinstance(self.price, (int, float)):
             raise ValueError("Price must be a positive number.")
+        
+        if not self.size or not isinstance(self.size, str):
+            raise ValueError("Size must be a non-empty string.")
 
-    def __init__(self, name: str, age: int, breed: str, weight: float, kid_friendly: bool, price: float):
+    def __init__(self, name: str, age: int, breed: str, weight: float, kid_friendly: bool, price: float, size: str):
         """Initialize a new Boxer instance with basic attributes.
 
         Args:
@@ -64,6 +68,39 @@ class Pet(db.Model):
         self.weight = weight
         self.kid_friendly = kid_friendly
         self.price = price
+        self.size = Pet.get_size(weight)
+
+    @classmethod
+    def get_size(cls, weight: float) -> str:
+        """Determine the size based on weight.
+
+        This method is defined as a class method rather than a static method,
+        even though it does not currently require access to the class object.
+        Both @staticmethod and @classmethod would be valid choices in this context;
+        however, using @classmethod makes it easier to support subclass-specific
+        behavior or logic overrides in the future.
+
+        Args:
+            weight: The weight of the pet.
+
+        Returns:
+            str: The weight class of the pet.
+
+        Raises:
+            ValueError: If the weight is less than 0.
+
+        """
+        if weight >= 90:
+            size = 'XLARGE'
+        elif weight >= 55:
+            size = 'LARGE'
+        elif weight >= 20:
+            size = 'MEDIUM'
+        elif weight >= 0:
+            size = 'SMALL'
+        else:
+            raise ValueError(f"Invalid weight: {weight}. Weight must be at least 0.")
+        return size    
 
     @classmethod
     def create_pet(cls, name: str, breed: str, age: int, weight: float, kid_friendly: bool) -> None:
