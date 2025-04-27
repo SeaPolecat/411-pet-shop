@@ -92,3 +92,36 @@ class Pet(db.Model):
         except SQLAlchemyError as e:
             logger.error(f"Database error while retrieving pet by ID {pet_id}: {e}")
             raise
+
+    @classmethod
+    def get_pet_by_name(cls, name: str) -> "Pet":
+        """Retrieve a pet by name.
+
+        Args:
+            name: The name of the pet.
+
+        Returns:
+            Pet: The pet instance.
+
+        Raises:
+            ValueError: If the pet with the given name does not exist.
+
+        """
+        logger.info(f"Attempting to retrieve pet with name '{name}'")
+
+        try:
+            pet = cls.query.filter_by(name=name.strip()).first()
+
+            if not pet:
+                logger.info(f"Pet with name '{name}'")
+                raise ValueError(f"Pet with name '{name}' not found")
+
+            logger.info(f"Successfully retrieved pet: {pet.name})")
+            return pet
+
+        except SQLAlchemyError as e:
+            logger.error(
+                f"Database error while retrieving pet by name "
+                f"(name '{name}): {e}"
+            )
+            raise
