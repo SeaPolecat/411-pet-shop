@@ -55,73 +55,92 @@ class Pet(db.Model):
 
         """
         self.name = name
-        self.weight = weight
-        self.height = height
-        self.reach = reach
         self.age = age
-        self.fights = 0
-        self.wins = 0
-        self.weight_class = Boxers.get_weight_class(weight)
+        self.breed = breed
+        self.weight = weight
+        self.kid_friendly = kid_friendly
 
     @classmethod
     def get_pet_by_id(cls, pet_id: int) -> "Pet":
         """Retrieve a pet by ID.
 
         Args:
-            pet_id: The ID of the pet.
+            boxer_id: The ID of the boxer.
 
         Returns:
-            Pet: The pet instance.
+            Boxer: The boxer instance.
 
         Raises:
-            ValueError: If the pet with the given ID does not exist.
+            ValueError: If the boxer with the given ID does not exist.
 
         """
-        logger.info(f"Attempting to retrieve pet with ID {pet_id}")
+        logger.info(f"Attempting to retrieve boxer with ID {boxer_id}")
 
         try:
-            pet = db.session.get(cls, pet_id)
+            boxer = db.session.get(cls, boxer_id)
 
-            if not pet:
-                logger.info(f"Pet with ID {pet_id} not found")
-                raise ValueError(f"Pet with ID {pet_id} not found")
+            if not boxer:
+                logger.info(f"Boxer with ID {boxer_id} not found")
+                raise ValueError(f"Boxer with ID {boxer_id} not found")
 
-            logger.info(f"Successfully retrieved pet: {pet.name})")
-            return pet
+            logger.info(f"Successfully retrieved boxer: {boxer.name})")
+            return boxer
 
         except SQLAlchemyError as e:
-            logger.error(f"Database error while retrieving pet by ID {pet_id}: {e}")
+            logger.error(f"Database error while retrieving boxer by ID {boxer_id}: {e}")
             raise
 
     @classmethod
-    def get_pet_by_name(cls, name: str) -> "Pet":
-        """Retrieve a pet by name.
+    def create_pet(cls, name: str, breed: str, age: int, weight: float, kid_friendly: bool) -> None:
+        """Create and persist a new Boxer instance.
 
         Args:
-            name: The name of the pet.
-
-        Returns:
-            Pet: The pet instance.
+            name: The name of the boxer.
+            weight: The weight of the boxer.
+            height: The height of the boxer.
+            reach: The reach of the boxer.
+            age: The age of the boxer.
 
         Raises:
-            ValueError: If the pet with the given name does not exist.
+            IntegrityError: If a boxer with the same name already exists.
+            ValueError: If the weight is less than 125 or if any of the input parameters are invalid.
+            SQLAlchemyError: If there is a database error during creation.
 
         """
-        logger.info(f"Attempting to retrieve pet with name '{name}'")
+        logger.info(f"Creating pet: {name}, {breed=} {age=} {weight=} {kid_friendly=}")
 
         try:
-            pet = cls.query.filter_by(name=name.strip()).first()
+            pet = Pet(
+                name=name.strip(),
+                weight=weight,
+                age=age,
+                breed=breed.strip(),
+                age=age
+            )
+            pet.validate()
+        except ValueError as e:
+            logger.warning(f"Validation failed: {e}")
+            raise
 
-            if not pet:
-                logger.info(f"Pet with name '{name}'")
-                raise ValueError(f"Pet with name '{name}' not found")
+        try:
+            existing = Pet.query.filter_by(name=name.strip()).first()
 
-            logger.info(f"Successfully retrieved pet: {pet.name})")
-            return pet
+            if existing:
+                logger.error(f"Pet already exists: {name})")
+                raise ValueError(f"Pet with name '{name}' already exists.")
+            
+            db.session.add(pet)
+            db.session.commit()
+            logger.info(f"Pet successfully added: {name})")
+
+            logger.info(f"Pet created successfully: {name}")
+
+        except IntegrityError:
+            logger.error(f"Pet with name '{name}' already exists.")
+            db.session.rollback()
+            raise ValueError(f"Pet with name '{name}' already exists.")
 
         except SQLAlchemyError as e:
-            logger.error(
-                f"Database error while retrieving pet by name "
-                f"(name '{name}): {e}"
-            )
+            db.session.rollback()
+            logger.error(f"Database error during creation: {e}")
             raise
