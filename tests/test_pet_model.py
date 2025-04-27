@@ -77,13 +77,15 @@ def test_invalid_price_update_raises(sample_pet):
 
 def test_validate_invalid_data():
     """Test that creating a pet with invalid data raises validation errors."""
+    pet = Pet(
+        name="", 
+        age=0, 
+        breed="", 
+        weight=0, 
+        kid_friendly="yes", 
+        price=0, 
+        size=""
+    )
     with pytest.raises(ValueError):
-        Pet(
-            name="",             # Invalid name
-            age=0,               # Invalid age
-            breed="",            # Invalid breed
-            weight=0,            # Invalid weight
-            kid_friendly="yes",  # Invalid kid_friendly (not boolean)
-            price=0,             # Invalid price
-            size=""              # Invalid size
-        )
+        pet.validate()
+
