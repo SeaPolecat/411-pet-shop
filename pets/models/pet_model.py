@@ -22,6 +22,7 @@ class Pet(db.Model):
     breed = db.Column(db.String, unique=True, nullable=False)
     weight = db.Column(db.Float, nullable=False)
     kid_friendly = db.Column(db.Bool, nullable=False)
+    price = db.Column(db.Float, nullable=False)
 
     def validate(self) -> None:
         if not self.name or not isinstance(self.name, str):
@@ -38,8 +39,11 @@ class Pet(db.Model):
         
         if not self.kid_friendly or not isinstance(self.kid_friendly, (bool)):
             raise ValueError("Kid-friendly must be 1 or 0.")
+        
+        if not self.price or self.price <= 0 or not isinstance(self.price, (int, float)):
+            raise ValueError("Price must be a positive number.")
 
-    def __init__(self, name: str, age: int, breed: str, weight: float, kid_friendly: bool):
+    def __init__(self, name: str, age: int, breed: str, weight: float, kid_friendly: bool, price: float):
         """Initialize a new Boxer instance with basic attributes.
 
         Args:
@@ -59,6 +63,7 @@ class Pet(db.Model):
         self.breed = breed
         self.weight = weight
         self.kid_friendly = kid_friendly
+        self.price = price
 
     @classmethod
     def create_pet(cls, name: str, breed: str, age: int, weight: float, kid_friendly: bool) -> None:
