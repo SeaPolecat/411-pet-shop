@@ -21,13 +21,13 @@ def get_image(breed) -> str:
         # Check if the request was successful
         response.raise_for_status()
 
-        if data["status"] == "success":
-            link = data["message"].strip()
+        if data.get("status") == "success":
+            link = data.get("message", "").strip()
         else:
+            logger.error(f"Dog API returned error: {data}")
             raise Exception(f"Dog API returned error: {data}")
 
-        
-
+        # Validate the link
         try:
             image = str(link)
         except ValueError:
