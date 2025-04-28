@@ -39,7 +39,8 @@ def create_app(config_class=ProductionConfig):
                 'weight': pet.weight,
                 'kid_friendly': pet.kid_friendly,
                 'price': pet.price,
-                'size': pet.size
+                'size': pet.size,
+                'image': pet.image
             } for pet in pets]
             return jsonify(pets_list)
         except Exception as e:
@@ -59,7 +60,8 @@ def create_app(config_class=ProductionConfig):
                 'weight': pet.weight,
                 'kid_friendly': pet.kid_friendly,
                 'price': pet.price,
-                'size': pet.size
+                'size': pet.size,
+                'image': pet.image
             }
             return jsonify(pet_data)
         except ValueError as e:
