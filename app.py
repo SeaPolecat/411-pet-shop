@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 from flask import Flask, jsonify, make_response, Response, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-# from flask_cors import CORS
+from flask_cors import CORS
 
 from config import ProductionConfig
 
@@ -26,7 +26,7 @@ def create_app(config_class=ProductionConfig):
         app.logger.info("Health check endpoint hit")
         return jsonify({'status': 'success', 'message': 'Service is running'})
 
-#Route to list all the pets
+    #Route to list all the pets
     @app.route('api/pets',methods=['GET'])
     def get_pets():
         try:
@@ -42,12 +42,12 @@ def create_app(config_class=ProductionConfig):
                 'size': pet.size
             } for pet in pets]
             return jsonify(pets_list)
-         except Exception as e:
+        except Exception as e:
             app.logger.error(f"Error fetching pets: {e}")
             return jsonify({'status': 'error', 'message': 'Error fetching pets'}), 500
 
-#Route to get Pet IDs to identify the pet
-      @app.route('/api/pets/<int:pet_id>', methods=['GET'])
+    #Route to get Pet IDs to identify the pet
+    @app.route('/api/pets/<int:pet_id>', methods=['GET'])
     def get_pet(pet_id):
         try:
             pet = Pet.get_pet_by_id(pet_id)
@@ -69,7 +69,7 @@ def create_app(config_class=ProductionConfig):
             app.logger.error(f"Error fetching pet with ID {pet_id}: {e}")
             return jsonify({'status': 'error', 'message': 'Error fetching pet'}), 500
 
- # Route to add a new pet
+    # Route to add a new pet
     @app.route('/api/pets', methods=['POST'])
     def add_pet():
         data = request.get_json()
@@ -96,8 +96,8 @@ def create_app(config_class=ProductionConfig):
             app.logger.error(f"Error adding pet: {e}")
             return jsonify({'status': 'error', 'message': 'Error adding pet'}), 500
             
- # Route to delete a new pet
-@app.route('/api/pets/<int:pet_id>', methods=['DELETE'])
+    # Route to delete a new pet
+    @app.route('/api/pets/<int:pet_id>', methods=['DELETE'])
     def delete_pet(pet_id):
         try:
             Pet.delete(pet_id) 
