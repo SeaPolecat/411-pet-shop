@@ -72,7 +72,7 @@ def create_app(config_class=ProductionConfig):
             return jsonify({'status': 'error', 'message': 'Error fetching pet'}), 500
 
     # Route to add a new pet
-    @app.route('/api/add-pet/<string:breed>', methods=['POST'])
+    @app.route('/api/add-pet', methods=['POST'])
     def add_pet():
         data = request.get_json()
         if not data:
@@ -85,6 +85,8 @@ def create_app(config_class=ProductionConfig):
             weight = data.get('weight')
             kid_friendly = data.get('kid_friendly')
             price = data.get('price')
+
+            # get the image from dog api
             image = get_image(breed)
 
             if not all([name, age, breed, weight is not None, kid_friendly is not None, price is not None]):
