@@ -70,7 +70,7 @@ def create_app(config_class=ProductionConfig):
             return jsonify({'status': 'error', 'message': 'Error fetching pet'}), 500
 
     # Route to add a new pet
-    @app.route('/api/add-pet', methods=['POST'])
+    @app.route('/api/add-pet/<string:breed>', methods=['POST'])
     def add_pet():
         data = request.get_json()
         if not data:
@@ -82,12 +82,13 @@ def create_app(config_class=ProductionConfig):
             breed = data.get('breed')
             weight = data.get('weight')
             kid_friendly = data.get('kid_friendly')
-            price = data.get('price') 
+            price = data.get('price')
+            image = get_image(breed)
 
             if not all([name, age, breed, weight is not None, kid_friendly is not None, price is not None]):
                  return jsonify({'status': 'error', 'message': 'Missing required pet data'}), 400
 
-            Pet.create_pet(name=name, breed=breed, age=age, weight=weight, kid_friendly=kid_friendly, price=price) 
+            Pet.create_pet(name=name, breed=breed, age=age, weight=weight, kid_friendly=kid_friendly, price=price, image=image) 
             return jsonify({'status': 'success', 'message': 'Pet added successfully'}), 201
         except ValueError as e:
             app.logger.warning(f"Error adding pet: {e}")
