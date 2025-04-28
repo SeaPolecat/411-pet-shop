@@ -47,7 +47,7 @@ def create_app(config_class=ProductionConfig):
             return jsonify({'status': 'error', 'message': 'Error fetching pets'}), 500
 
     #Route to get Pet IDs to identify the pet
-    @app.route('/api/pets/<int:pet_id>', methods=['GET'])
+    @app.route('/api/get-pet-by-id/<int:pet_id>', methods=['GET'])
     def get_pet(pet_id):
         try:
             pet = Pet.get_pet_by_id(pet_id)
@@ -70,7 +70,7 @@ def create_app(config_class=ProductionConfig):
             return jsonify({'status': 'error', 'message': 'Error fetching pet'}), 500
 
     # Route to add a new pet
-    @app.route('/api/pets', methods=['POST'])
+    @app.route('/api/add-pet', methods=['POST'])
     def add_pet():
         data = request.get_json()
         if not data:
@@ -97,7 +97,7 @@ def create_app(config_class=ProductionConfig):
             return jsonify({'status': 'error', 'message': 'Error adding pet'}), 500
             
     # Route to delete a new pet
-    @app.route('/api/pets/<int:pet_id>', methods=['DELETE'])
+    @app.route('/api/delete-pet/<int:pet_id>', methods=['DELETE'])
     def delete_pet(pet_id):
         try:
             Pet.delete(pet_id) 
@@ -110,7 +110,7 @@ def create_app(config_class=ProductionConfig):
             return jsonify({'status': 'error', 'message': 'Error deleting pet'}), 500
 
     # Route to update a pet's price by ID
-    @app.route('/api/pets/<int:pet_id>/price', methods=['PUT'])
+    @app.route('/api/update-price/<int:pet_id>/price', methods=['PUT'])
     def update_pet_price(pet_id):
         data = request.get_json()
         if not data or 'new_price' not in data:
