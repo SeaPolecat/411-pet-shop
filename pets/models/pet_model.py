@@ -28,7 +28,8 @@ class Pet(db.Model):
     weight = db.Column(db.Float, nullable=False)
     kid_friendly = db.Column(db.Boolean, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    size = db.Column(db.String)
+    size = db.Column(db.String, nullable=False)
+    image = db.Column(db.String, nullable=False)
 
     def validate(self) -> None:
         """Validate the pet's attributes.
@@ -62,8 +63,11 @@ class Pet(db.Model):
         
         if not self.size or not isinstance(self.size, str):
             raise ValueError("Size must be a non-empty string.")
+        
+        if not self.image or not isinstance(self.image, str):
+            raise ValueError("Image must be a non-empty string.")
 
-    def __init__(self, name: str, age: int, breed: str, weight: float, kid_friendly: bool, price: float, size: str):
+    def __init__(self, name: str, age: int, breed: str, weight: float, kid_friendly: bool, price: float, size: str, image: str):
         """Initialize a new Pet instance with the given attributes.
 
         Args:
@@ -86,6 +90,7 @@ class Pet(db.Model):
         self.kid_friendly = kid_friendly
         self.price = price
         self.size = Pet.get_size(weight)
+        self.image = image
 
     @classmethod
     def get_size(cls, weight: float) -> str:
@@ -113,7 +118,7 @@ class Pet(db.Model):
         return size    
 
     @classmethod
-    def create_pet(cls, name: str, breed: str, age: int, weight: float, kid_friendly: bool) -> None:
+    def create_pet(cls, name: str, breed: str, age: int, weight: float, kid_friendly: bool, price: float, image: str) -> None:
         """Create and persist a new Pet instance.
 
         Args:
@@ -134,9 +139,13 @@ class Pet(db.Model):
         try:
             pet = Pet(
                 name=name.strip(),
-                weight=weight,
                 age=age,
                 breed=breed.strip(),
+                weight=weight,
+                kid_friendly=kid_friendly,
+                price=price,
+                size=Pet.get_size(weight),
+                image=image.strip()
             )
             pet.validate()
         except ValueError as e:
