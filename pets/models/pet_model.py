@@ -67,7 +67,7 @@ class Pet(db.Model):
         if not self.image or not isinstance(self.image, str):
             raise ValueError("Image must be a non-empty string.")
 
-    def __init__(self, name: str, age: int, breed: str, weight: float, kid_friendly: bool, price: float, size: str, image: str):
+    def __init__(self, name: str, age: int, breed: str, weight: float, kid_friendly: bool, price: float, image: str):
         """Initialize a new Pet instance with the given attributes.
 
         Args:
