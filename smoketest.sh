@@ -32,11 +32,11 @@ print_status $? "Login passed"
 
 # Add a pet
 echo "-> Adding a pet..."
-curl -s -b cookies.txt -X POST "$BASE_URL/add-pet" -H "Content-Type: application/json" -d '{
+curl -s -b cookies.txt -X POST "$BASE_URL/pets" -H "Content-Type: application/json" -d '{
   "name": "Buddy",
   "age": 3,
   "breed": "Golden Retriever",
-  "weight": 30,
+  "weight": 65.0,
   "kid_friendly": true,
   "price": 500
 }' | grep -q '"status": "success"'

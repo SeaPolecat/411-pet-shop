@@ -5,8 +5,8 @@ import os
 from flask_login import UserMixin
 from sqlalchemy.exc import IntegrityError
 
-from pet.db import db
-from pet.utils.logger import configure_logger
+from pets.db import db
+from pets.utils.logger import configure_logger
 
 
 logger = logging.getLogger(__name__)
@@ -111,7 +111,7 @@ class Users(db.Model, UserMixin):
         Returns:
             int: The ID of the user.
         """
-        return self.username
+        return str(self.id)
 
     @classmethod
     def get_id_by_username(cls, username: str) -> int:
@@ -155,3 +155,8 @@ class Users(db.Model, UserMixin):
         user.password = hashed_password
         db.session.commit()
         logger.info("Password updated successfully for user: %s", username)
+    def verify_password(self, password: str) -> bool:
+        
+        hashed_input = hashlib.sha256((password + self.salt).encode()).hexdigest()
+        return hashed_input == self.password
+

@@ -11,6 +11,8 @@ from pets.models.user_model import Users
 from pets.utils.logger import configure_logger
 from pets.utils.api_utils import get_image
 
+
+login_manager = LoginManager()
 load_dotenv()
 
 def create_app(config_class=ProductionConfig):
@@ -19,8 +21,16 @@ def create_app(config_class=ProductionConfig):
 
 
     db.init_app(app)
+    login_manager.init_app(app)
     CORS(app)
+    
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return Users.query.get(int(user_id))
 
+    with app.app_context():
+        db.create_all()
     @app.route('/api/health', methods=['GET'])
     def healthcheck():
         app.logger.info("Health check endpoint hit")
@@ -73,22 +83,12 @@ def create_app(config_class=ProductionConfig):
 
     @app.route('/api/login', methods=['POST'])
     def login() -> Response:
-        """Authenticate a user and log them in.
-
-        Expected JSON Input:
-            - username (str): The username of the user.
-            - password (str): The password of the user.
-
-        Returns:
-            JSON response indicating the success of the login attempt.
-
-        Raises:
-            401 error if the username or password is incorrect.
-        """
         try:
             data = request.get_json()
             username = data.get("username")
             password = data.get("password")
+
+            app.logger.debug(f"Trying login for: {username}")
 
             if not username or not password:
                 return make_response(jsonify({
@@ -96,8 +96,14 @@ def create_app(config_class=ProductionConfig):
                     "message": "Username and password are required"
                 }), 400)
 
-            if Users.check_password(username, password):
-                user = Users.query.filter_by(username=username).first()
+            user = Users.query.filter_by(username=username).first()
+            if not user:
+                return make_response(jsonify({
+                    "status": "error",
+                    "message": f"User '{username}' not found"
+                }), 404)
+
+            if user.verify_password(password):  # <- Use method from user_model
                 login_user(user)
                 return make_response(jsonify({
                     "status": "success",
@@ -106,21 +112,19 @@ def create_app(config_class=ProductionConfig):
             else:
                 return make_response(jsonify({
                     "status": "error",
-                    "message": "Invalid username or password"
+                    "message": "Invalid password"
                 }), 401)
 
-        except ValueError as e:
-            return make_response(jsonify({
-                "status": "error",
-                "message": str(e)
-            }), 401)
         except Exception as e:
             app.logger.error(f"Login failed: {e}")
             return make_response(jsonify({
                 "status": "error",
-                "message": "An internal error occurred during login",
+                "message": "Internal error during login",
                 "details": str(e)
             }), 500)
+
+
+
 
     @app.route('/api/logout', methods=['POST'])
     @login_required
@@ -183,7 +187,7 @@ def create_app(config_class=ProductionConfig):
             }), 500)
 
     #Route to list all the pets
-    @app.route('api/pets',methods=['GET'])
+    @app.route('/api/pets',methods=['GET'])
     def get_pets():
         try:
             pets = Pet.query.all()
@@ -228,7 +232,7 @@ def create_app(config_class=ProductionConfig):
             return jsonify({'status': 'error', 'message': 'Error fetching pet'}), 500
 
     # Route to add a new pet
-    @app.route('/api/add-pet', methods=['POST'])
+    @app.route('/api/pets', methods=['POST'])
     def add_pet():
         data = request.get_json()
         if not data:
@@ -242,20 +246,26 @@ def create_app(config_class=ProductionConfig):
             kid_friendly = data.get('kid_friendly')
             price = data.get('price')
 
-            # get the image from dog api
-            image = get_image(breed)
+            # Try to get image
+            try:
+                image = get_image(breed)
+            except Exception as e:
+                app.logger.error(f"Failed to fetch dog image: {e}")
+                image = "https://example.com/placeholder.jpg"  # or empty string ""
 
             if not all([name, age, breed, weight is not None, kid_friendly is not None, price is not None]):
-                 return jsonify({'status': 'error', 'message': 'Missing required pet data'}), 400
+                return jsonify({'status': 'error', 'message': 'Missing required pet data'}), 400
 
-            Pet.create_pet(name=name, breed=breed, age=age, weight=weight, kid_friendly=kid_friendly, price=price, image=image) 
+            Pet.create_pet(name=name, breed=breed, age=age, weight=weight, kid_friendly=kid_friendly, price=price, image=image)
             return jsonify({'status': 'success', 'message': 'Pet added successfully'}), 201
+
         except ValueError as e:
             app.logger.warning(f"Error adding pet: {e}")
             return jsonify({'status': 'error', 'message': str(e)}), 400
         except Exception as e:
             app.logger.error(f"Error adding pet: {e}")
             return jsonify({'status': 'error', 'message': 'Error adding pet'}), 500
+
             
     # Route to delete a new pet
     @app.route('/api/delete-pet/<int:pet_id>', methods=['DELETE'])
@@ -306,6 +316,8 @@ def create_app(config_class=ProductionConfig):
     
 if __name__ == '__main__':
     app = create_app()
+    with app.app_context():
+        db.create_all()
     app.logger.info("Starting Flask app...")
     try:
         app.run(debug=True, host='0.0.0.0', port=5002)
@@ -313,3 +325,4 @@ if __name__ == '__main__':
         app.logger.error(f"Flask app encountered an error: {e}")
     finally:
         app.logger.info("Flask app has stopped.")
+
