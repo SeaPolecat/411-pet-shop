@@ -17,20 +17,29 @@ load_dotenv()
 
 def create_app(config_class=ProductionConfig):
     app = Flask(__name__)
+    configure_logger(app.logger)
+    
     app.config.from_object(config_class)
 
-
-    db.init_app(app)
-    login_manager.init_app(app)
-    CORS(app)
+    db.init_app(app)  # Initialize db with app
+    with app.app_context():
+        db.create_all()  # Recreate all tables
     
+    login_manager.init_app(app)
+    login_manager.login_view = "login"
+    CORS(app)
     
     @login_manager.user_loader
     def load_user(user_id):
         return Users.query.get(int(user_id))
+    
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return make_response(jsonify({
+            "status": "error",
+            "message": "Authentication required"
+        }), 401)
 
-    with app.app_context():
-        db.create_all()
     @app.route('/api/health', methods=['GET'])
     def healthcheck():
         app.logger.info("Health check endpoint hit")
