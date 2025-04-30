@@ -17,7 +17,7 @@ def sample_pet(session):
         weight=65.0,
         kid_friendly=True,
         price=500.0,
-        size="LARGE"
+        image="https://images.dog.ceo/breeds/dane-great/n02109047_17050.jpg"
     )
     session.add(pet)
     session.commit()
@@ -34,7 +34,7 @@ def test_pet_creation(session):
         weight=25.0,
         kid_friendly=True,
         price=300.0,
-        size="MEDIUM"
+        image="https://images.dog.ceo/breeds/dane-great/n02109047_17050.jpg"
     )
     session.add(pet)
     session.commit()
@@ -86,7 +86,7 @@ def test_validate_invalid_data():
         weight=0, 
         kid_friendly="yes", 
         price=0, 
-        size=""
+        image=""
     )
     with pytest.raises(ValueError):
         pet.validate()
