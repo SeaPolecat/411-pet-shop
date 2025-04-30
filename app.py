@@ -24,7 +24,7 @@ def create_app(config_class=ProductionConfig):
     db.init_app(app)  # Initialize db with app
     with app.app_context():
         db.create_all()  # Recreate all tables
-    
+
     login_manager.init_app(app)
     login_manager.login_view = "login"
     CORS(app)
@@ -39,11 +39,30 @@ def create_app(config_class=ProductionConfig):
             "status": "error",
             "message": "Authentication required"
         }), 401)
+    
+    ####################################################
+    #
+    # Healthchecks
+    #
+    ####################################################
 
     @app.route('/api/health', methods=['GET'])
     def healthcheck():
+        """
+        Health check route to verify the service is running.
+
+        Returns:
+            JSON response indicating the health status of the service.
+
+        """
         app.logger.info("Health check endpoint hit")
         return jsonify({'status': 'success', 'message': 'Service is running'})
+    
+    ##########################################################
+    #
+    # User Management
+    #
+    #########################################################
     
     @app.route('/api/create-user', methods=['POST', 'PUT'])
     def create_user() -> Response:
@@ -92,6 +111,18 @@ def create_app(config_class=ProductionConfig):
 
     @app.route('/api/login', methods=['POST'])
     def login() -> Response:
+        """Authenticate a user and log them in.
+
+        Expected JSON Input:
+            - username (str): The username of the user.
+            - password (str): The password of the user.
+
+        Returns:
+            JSON response indicating the success of the login attempt.
+
+        Raises:
+            401 error if the username or password is incorrect.
+        """
         try:
             data = request.get_json()
             username = data.get("username")
@@ -131,9 +162,6 @@ def create_app(config_class=ProductionConfig):
                 "message": "Internal error during login",
                 "details": str(e)
             }), 500)
-
-
-
 
     @app.route('/api/logout', methods=['POST'])
     @login_required
@@ -194,6 +222,12 @@ def create_app(config_class=ProductionConfig):
                 "message": "An internal error occurred while changing password",
                 "details": str(e)
             }), 500)
+        
+    ##########################################################
+    #
+    # Pets
+    #
+    #########################################################
 
     #Route to list all the pets
     @app.route('/api/pets',methods=['GET'])
@@ -334,4 +368,3 @@ if __name__ == '__main__':
         app.logger.error(f"Flask app encountered an error: {e}")
     finally:
         app.logger.info("Flask app has stopped.")
-
