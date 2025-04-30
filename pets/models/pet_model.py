@@ -144,7 +144,6 @@ class Pet(db.Model):
                 weight=weight,
                 kid_friendly=kid_friendly,
                 price=price,
-                size=Pet.get_size(weight),
                 image=image.strip()
             )
             pet.validate()
