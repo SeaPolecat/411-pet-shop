@@ -320,7 +320,7 @@ def create_app(config_class=ProductionConfig):
 
         Raises:
             400 error if input validation fails.
-            500 error if there is an issue adding the boxer to the database.
+            500 error if there is an issue adding the pet to the database.
         """
         app.logger.info("Received request to add new pet")
 
