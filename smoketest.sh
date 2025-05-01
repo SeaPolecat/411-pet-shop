@@ -32,7 +32,7 @@ print_status $? "Login passed"
 
 # Add a pet
 echo "-> Adding a pet..."
-curl -s -b cookies.txt -X POST "$BASE_URL/pets" -H "Content-Type: application/json" -d '{
+curl -s -b cookies.txt -X POST "$BASE_URL/add-pet" -H "Content-Type: application/json" -d '{
   "name": "Buddy",
   "age": 3,
   "breed": "Golden Retriever",
@@ -54,7 +54,7 @@ print_status $? "Get pet by ID passed"
 
 # Update pet price
 echo "-> Updating pet price..."
-curl -s -b cookies.txt -X PUT "$BASE_URL/update-price/1/price" -H "Content-Type: application/json" -d '{"new_price": 550}' | grep -q '"status": "success"'
+curl -s -b cookies.txt -X PUT "$BASE_URL/update-price/1" -H "Content-Type: application/json" -d '{"new_price": 550}' | grep -q '"status": "success"'
 print_status $? "Update pet price passed"
 
 # Delete pet
