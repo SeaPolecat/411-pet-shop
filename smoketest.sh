@@ -47,6 +47,22 @@ echo "-> Listing pets..."
 curl -s "$BASE_URL/pets" | grep -q '"name": "Buddy"'
 print_status $? "Pet listing passed"
 
+# Check dog photo route
+echo "-> Fetching dog photo..."
+DOG_PHOTO_RESPONSE=$(curl -s -X PUT "$BASE_URL/dog-photo" -H "Content-Type: application/json" -d '{"breed": "retriever/golden"}')
+
+
+# Extract image URL using grep and regex
+DOG_IMAGE_URL=$(echo "$DOG_PHOTO_RESPONSE" | grep -oE 'https://[^"]+\.jpg')
+
+if [[ "$DOG_IMAGE_URL" == https://* ]]; then
+  echo "[PASS] Dog photo route returned image URL"
+else
+  echo "[FAIL] Dog photo route failed"
+  echo "Response was: $DOG_PHOTO_RESPONSE"
+fi
+
+
 # Get pet by ID 1 (assuming Buddy got ID=1)
 echo "-> Getting pet by ID..."
 curl -s "$BASE_URL/get-pet-by-id/1" | grep -q '"name": "Buddy"'
@@ -61,6 +77,8 @@ print_status $? "Update pet price passed"
 echo "-> Deleting pet..."
 curl -s -b cookies.txt -X DELETE "$BASE_URL/delete-pet/1" | grep -q '"status": "success"'
 print_status $? "Pet deletion passed"
+
+
 
 echo "=== ALL SMOKETESTS PASSED SUCCESSFULLY ==="
 

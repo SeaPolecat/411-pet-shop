@@ -437,7 +437,7 @@ def create_app(config_class=ProductionConfig):
             return jsonify({'status': 'error', 'message': 'Error updating pet price'}), 500
 
 
-    @app.route('/api/dog-photo', methods=['PUT'])
+    @app.route('/api/dog-photo', methods=['GET', 'PUT'])
     def get_dog_photo():
         """Route to fetch a random dog photo from Dog API.
 
