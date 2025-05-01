@@ -53,7 +53,6 @@ def create_app(config_class=ProductionConfig):
 
         Returns:
             JSON response indicating the health status of the service.
-
         """
         app.logger.info("Health check endpoint hit")
         return jsonify({'status': 'success', 'message': 'Service is running'})
@@ -170,7 +169,6 @@ def create_app(config_class=ProductionConfig):
 
         Returns:
             JSON response indicating the success of the logout operation.
-
         """
         logout_user()
         return make_response(jsonify({
@@ -223,16 +221,27 @@ def create_app(config_class=ProductionConfig):
                 "details": str(e)
             }), 500)
         
+
     ##########################################################
     #
     # Pets
     #
     #########################################################
 
-    #Route to list all the pets
+
     @app.route('/api/pets',methods=['GET'])
     def get_pets():
+        """Route to get a list of all pets in the database.
+
+        Returns:
+            JSON response with the list of pets.
+        
+        Raises:
+            500 error if there is an issue getting the pets.
+        """
         try:
+            app.logger.info("Retrieving list of pets...")
+
             pets = Pet.query.all()
             pets_list = [{
                 'id': pet.id,
@@ -245,15 +254,32 @@ def create_app(config_class=ProductionConfig):
                 'size': pet.size,
                 'image': pet.image
             } for pet in pets]
+
+            app.logger.info(f"Retrieved {len(pets)} pet(s).")
             return jsonify(pets_list)
+        
         except Exception as e:
             app.logger.error(f"Error fetching pets: {e}")
             return jsonify({'status': 'error', 'message': 'Error fetching pets'}), 500
 
-    #Route to get Pet IDs to identify the pet
+
     @app.route('/api/get-pet-by-id/<int:pet_id>', methods=['GET'])
-    def get_pet(pet_id):
+    def get_pet_by_id(pet_id):
+        """Route to get a pet by its ID.
+
+        Path Parameter:
+            - pet_id (int): The ID of the pet.
+
+        Returns:
+            JSON response containing the pet details if found.
+
+        Raises:
+            404 error if the pet is not found.
+            500 error if there is an issue retrieving the pet from the database.
+        """
         try:
+            app.logger.info(f"Received request to retrieve pet with ID {pet_id}")
+
             pet = Pet.get_pet_by_id(pet_id)
             pet_data = {
                 'id': pet.id,
@@ -266,7 +292,9 @@ def create_app(config_class=ProductionConfig):
                 'size': pet.size,
                 'image': pet.image
             }
+            app.logger.info(f"Successfully retrieved pet: {pet}")
             return jsonify(pet_data)
+        
         except ValueError as e:
             app.logger.warning(f"Pet with ID {pet_id} not found: {e}")
             return jsonify({'status': 'error', 'message': str(e)}), 404
@@ -274,11 +302,32 @@ def create_app(config_class=ProductionConfig):
             app.logger.error(f"Error fetching pet with ID {pet_id}: {e}")
             return jsonify({'status': 'error', 'message': 'Error fetching pet'}), 500
 
-    # Route to add a new pet
-    @app.route('/api/pets', methods=['POST'])
+    
+    @app.route('/api/add-pet', methods=['POST'])
     def add_pet():
+        """Route to add a pet to the pet shop.
+
+        Expected JSON Input:
+            - name (str): The pet's name.
+            - age (int): The pet's age.
+            - breed (str): The pet's breed.
+            - weight (float): The pet's weight in lbs.
+            - kid-friendly (bool): Whether or not the pet is friendly towards kids.
+            - price (float): The pet's price in USD.
+
+        Returns:
+            JSON response indicating the success of the pet addition.
+
+        Raises:
+            400 error if input validation fails.
+            500 error if there is an issue adding the boxer to the database.
+        """
+        app.logger.info("Received request to add new pet")
+
         data = request.get_json()
+
         if not data:
+            app.logger.warning(f"Invalid JSON data")
             return jsonify({'status': 'error', 'message': 'Invalid JSON data'}), 400
 
         try:
@@ -289,7 +338,7 @@ def create_app(config_class=ProductionConfig):
             kid_friendly = data.get('kid_friendly')
             price = data.get('price')
 
-            # Try to get image
+            # Try to get image from Dog API
             try:
                 image = get_image(breed)
             except Exception as e:
@@ -297,9 +346,14 @@ def create_app(config_class=ProductionConfig):
                 image = "https://example.com/placeholder.jpg"  # or empty string ""
 
             if not all([name, age, breed, weight is not None, kid_friendly is not None, price is not None]):
+                app.logger.warning(f"Missing required pet data")
                 return jsonify({'status': 'error', 'message': 'Missing required pet data'}), 400
 
+            app.logger.info(f"Adding pet: {name} for ${price}")
+
             Pet.create_pet(name=name, breed=breed, age=age, weight=weight, kid_friendly=kid_friendly, price=price, image=image)
+
+            app.logger.info(f"Pet added successfully: {name}")
             return jsonify({'status': 'success', 'message': 'Pet added successfully'}), 201
 
         except ValueError as e:
@@ -310,12 +364,28 @@ def create_app(config_class=ProductionConfig):
             return jsonify({'status': 'error', 'message': 'Error adding pet'}), 500
 
             
-    # Route to delete a new pet
     @app.route('/api/delete-pet/<int:pet_id>', methods=['DELETE'])
     def delete_pet(pet_id):
+        """Route to delete a pet by ID.
+
+        Path Parameter:
+            - pet_id (int): The ID of the pet to delete.
+
+        Returns:
+            JSON response indicating success of the operation.
+
+        Raises:
+            404 error if the pet does not exist.
+            500 error if there is an issue removing the pet from the database.
+        """
         try:
-            Pet.delete(pet_id) 
+            app.logger.info(f"Received request to delete pet with ID {pet_id}")
+
+            Pet.delete(pet_id)
+
+            app.logger.info(f"Successfully deleted pet with ID {pet_id}")
             return jsonify({'status': 'success', 'message': f'Pet with ID {pet_id} deleted successfully'})
+        
         except ValueError as e:
             app.logger.warning(f"Pet with ID {pet_id} not found for deletion: {e}")
             return jsonify({'status': 'error', 'message': str(e)}), 404
@@ -323,18 +393,41 @@ def create_app(config_class=ProductionConfig):
             app.logger.error(f"Error deleting pet with ID {pet_id}: {e}")
             return jsonify({'status': 'error', 'message': 'Error deleting pet'}), 500
 
-    # Route to update a pet's price by ID
-    @app.route('/api/update-price/<int:pet_id>/price', methods=['PUT'])
+
+    @app.route('/api/update-price/<int:pet_id>', methods=['PUT'])
     def update_pet_price(pet_id):
+        """Route to update a pet's price.
+
+        Path Parameter:
+            - pet_id (int): The ID of the pet whose price should be updated.
+
+        Expected JSON Input:
+            - new_price (float): The pet's new price.
+
+        Returns:
+            JSON string indicating successful update of the pet's price.
+
+        Raises:
+            400 error if input validation fails.
+            500 error if there is an issue updating the pet's price.
+        """
+        app.logger.info(f"Received request to update pet's price: {pet_id}")
+
         data = request.get_json()
+
         if not data or 'new_price' not in data:
+            app.logger.warning(f"Invalid JSON data or missing new_price")
             return jsonify({'status': 'error', 'message': 'Invalid JSON data or missing new_price'}), 400
 
         new_price = data.get('new_price')
 
         try:
+            app.logger.info(f"Updating the pet's price...")
+
             pet = Pet.get_pet_by_id(pet_id) 
             pet.update_price(new_price)
+
+            app.logger.info(f"Price for pet with ID {pet_id} updated successfully: ${new_price}")
             return jsonify({'status': 'success', 'message': f'Price for pet with ID {pet_id} updated successfully'})
         except ValueError as e:
             app.logger.warning(f"Error updating price for pet with ID {pet_id}: {e}")
@@ -343,24 +436,44 @@ def create_app(config_class=ProductionConfig):
             app.logger.error(f"Error updating price for pet with ID {pet_id}: {e}")
             return jsonify({'status': 'error', 'message': 'Error updating pet price'}), 500
 
-    #Route to get dog photo depending on the breed
-    @app.route('/api/dog_photo', methods=['GET'])
+
+    @app.route('/api/dog-photo', methods=['PUT'])
     def get_dog_photo():
-        breed = request.args.get('breed')
+        """Route to fetch a random dog photo from Dog API.
+
+        Expected JSON Input:
+            - breed (str): The dog's breed.
+
+        Returns:
+            JSON response containing the dog photo from Dog API.
+
+        Raises:
+            400 error if input validation fails.
+            500 error if there is an issue fetching the dog photo.
+        """
+        data = request.get_json()
+        #breed = request.args.get('breed')
+        breed = data.get('breed')
+
         if not breed:
-            return jsonify({'status': 'error', 'message': 'Breed parameter is required'}), 400
+            app.logger.warning(f"Missing breed parameter")
+            return jsonify({'status': 'error', 'message': 'Missing breed parameter'}), 400
+        
         try:
+            app.logger.info(f"Fetching the dog photo from Dog API...")
+
             photo_url = get_image(breed)
+
+            app.logger.info(f"Successfully fetched the dog photo")
             return jsonify({'status': 'success', 'breed': breed, 'photo_url': photo_url})
         except Exception as e:
             app.logger.error(f"Error fetching dog photo for breed {breed}: {e}")
             return jsonify({'status': 'error', 'message': f'Error fetching dog photo: {e}'}), 500
+        
     return app
     
 if __name__ == '__main__':
     app = create_app()
-    with app.app_context():
-        db.create_all()
     app.logger.info("Starting Flask app...")
     try:
         app.run(debug=True, host='0.0.0.0', port=5002)
