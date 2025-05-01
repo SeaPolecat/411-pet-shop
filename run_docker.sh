@@ -44,6 +44,7 @@ echo "Running Docker container..."
 docker run -d \
   --name ${IMAGE_NAME}_container \
   --env-file .env \
+  -v ${PWD}/db:/app/db \
   -p ${HOST_PORT}:${CONTAINER_PORT} \
   ${IMAGE_NAME}:${CONTAINER_TAG}
 
